@@ -24,8 +24,8 @@ mkdir -p $BUILD_DIR
 cd $BUILD_DIR
 
 echo "Downloading Fess..."
-#wget -O ${FESS_NAME}.zip "$FESS_DOWNLOAD_URL"
-cp ../${FESS_NAME}.zip .
+wget -O ${FESS_NAME}.zip "$FESS_DOWNLOAD_URL"
+#cp ../${FESS_NAME}.zip .
 unzip ${FESS_NAME}.zip 
 
 # copy fess to solr

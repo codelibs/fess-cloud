@@ -17,12 +17,13 @@ chmod +x $BUILD_DIR/*/bin/*.sh
 
 # ZK hosts
 for (( I = 0; I < ${#ZK_SOLR_SERVER_NAMES[@]}; ++I )) do
-    HOST=${ZK_SOLR_SERVER_HOSTS[$I]}
+    SOLR_HOST=${ZK_SOLR_SERVER_HOSTS[$I]}
+    SOLR_PORT=${ZK_SOLR_SERVER_SOLR_PORTS[$I]}
     ZK_PORT=${ZK_SOLR_SERVER_ZK_PORTS[$I]}
     if [ $I != 0 ] ; then
         ZK_HOSTS="${ZK_HOSTS},"
     fi
-    ZK_HOSTS="${ZK_HOSTS}${HOST}:${ZK_PORT}"
+    ZK_HOSTS="${ZK_HOSTS}${SOLR_HOST}:${ZK_PORT}"
 done
 echo "ZooKeeper Hosts: $ZK_HOSTS"
 
@@ -48,6 +49,7 @@ sleep $WAIT_COUNT
 echo "Creating SolrCloud collection."
 java -classpath .:$BUILD_DIR/solr-jars/* org.apache.solr.cloud.ZkCLI -zkhost $ZK_HOSTS -cmd upconfig -confname $FESS_CONF -confdir $BUILD_DIR/solr-config
 java -classpath .:$BUILD_DIR/solr-jars/* org.apache.solr.cloud.ZkCLI -zkhost $ZK_HOSTS -cmd linkconfig -collection $FESS_COLLECTION -confname $FESS_CONF
+curl "$SOLR_HOST:$SOLR_PORT/solr/admin/collections?action=CREATE&name=$FESS_COLLECTION&numShards=$NUM_SHARDS&replicationFactor=$REPLICATION_FACTOR&maxShardsPerNode=$MAX_SHARDS_PER_NODE"
 
 # Create 1 Fess Server
 for (( I = 0; I < ${#FESS_SERVER_NAMES[@]}; ++I )) do
@@ -57,8 +59,5 @@ for (( I = 0; I < ${#FESS_SERVER_NAMES[@]}; ++I )) do
 done
 
 kill $TAIL_PID
-tail -f $BUILD_DIR/zksolr-server-1/logs/catalina.out \
-    $BUILD_DIR/zksolr-server-2/logs/catalina.out \
-    $BUILD_DIR/zksolr-server-3/logs/catalina.out \
-    $BUILD_DIR/solr-server-1/logs/catalina.out \
-    $BUILD_DIR/fess-server-1/logs/catalina.out 
+tail -f $BUILD_DIR/*/logs/catalina.out 
+
