@@ -3,35 +3,60 @@
 cd `dirname $0`
 BASE_DIR=`pwd`
 BUILD_DIR=$BASE_DIR/target
+WAIT_COUNT=$1
+
+if [ x$WAIT_COUNT = "x" ] ; then
+    WAIT_COUNT=60
+fi
+
+. $BASE_DIR/config.sh
 
 bash $BASE_DIR/build.sh 
 
 chmod +x $BUILD_DIR/*/bin/*.sh
 
-# Create 4 ZK+Solr Servers
-$BUILD_DIR/zksolr-server-1/bin/startup.sh
-$BUILD_DIR/zksolr-server-2/bin/startup.sh
-$BUILD_DIR/zksolr-server-3/bin/startup.sh
+# ZK hosts
+for (( I = 0; I < ${#ZK_SOLR_SERVER_NAMES[@]}; ++I )) do
+    HOST=${ZK_SOLR_SERVER_HOSTS[$I]}
+    ZK_PORT=${ZK_SOLR_SERVER_ZK_PORTS[$I]}
+    if [ $I != 0 ] ; then
+        ZK_HOSTS="${ZK_HOSTS},"
+    fi
+    ZK_HOSTS="${ZK_HOSTS}${HOST}:${ZK_PORT}"
+done
+echo "ZooKeeper Hosts: $ZK_HOSTS"
 
-# Create 1 Solr Server
-$BUILD_DIR/solr-server-1/bin/startup.sh
-
-echo -n "Waiting"
-COUNT=0
-WAIT_COUNT=30
-while [ $COUNT -lt $WAIT_COUNT ] ; do
-    sleep 1
-    echo -n "."
-    COUNT=`expr $COUNT + 1`
+# Create ZK+Solr Servers
+for (( I = 0; I < ${#ZK_SOLR_SERVER_NAMES[@]}; ++I )) do
+    NAME=${ZK_SOLR_SERVER_NAMES[$I]}
+    echo "Starting $NAME ..."
+    $BUILD_DIR/$NAME/bin/startup.sh
 done
 
+# Create Solr Servers
+for (( I = 0; I < ${#SOLR_SERVER_NAMES[@]}; ++I )) do
+    NAME=${SOLR_SERVER_NAMES[$I]}
+    echo "Starting $NAME ..."
+    $BUILD_DIR/$NAME/bin/startup.sh
+done
+
+tail -f $BUILD_DIR/*/logs/catalina.out &
+TAIL_PID=$!
+
+sleep $WAIT_COUNT
+
 echo "Creating SolrCloud collection."
-java -classpath .:/home/shinsuke/tmp/fess-cloud/target/solr-jars/* org.apache.solr.cloud.ZkCLI -zkhost localhost:9180,localhost:9280,localhost:9380 -cmd upconfig -confname fessconf -confdir /home/shinsuke/tmp/fess-cloud/target/solr-config
-java -classpath .:/home/shinsuke/tmp/fess-cloud/target/solr-jars/* org.apache.solr.cloud.ZkCLI -zkhost localhost:9180,localhost:9280,localhost:9380 -cmd linkconfig -collection fess-collection -confname fessconf
+java -classpath .:$BUILD_DIR/solr-jars/* org.apache.solr.cloud.ZkCLI -zkhost $ZK_HOSTS -cmd upconfig -confname $FESS_CONF -confdir $BUILD_DIR/solr-config
+java -classpath .:$BUILD_DIR/solr-jars/* org.apache.solr.cloud.ZkCLI -zkhost $ZK_HOSTS -cmd linkconfig -collection $FESS_COLLECTION -confname $FESS_CONF
 
 # Create 1 Fess Server
-$BUILD_DIR/fess-server-1/bin/startup.sh
+for (( I = 0; I < ${#FESS_SERVER_NAMES[@]}; ++I )) do
+    NAME=${FESS_SERVER_NAMES[$I]}
+    echo "Starting $NAME ..."
+    $BUILD_DIR/$NAME/bin/startup.sh
+done
 
+kill $TAIL_PID
 tail -f $BUILD_DIR/zksolr-server-1/logs/catalina.out \
     $BUILD_DIR/zksolr-server-2/logs/catalina.out \
     $BUILD_DIR/zksolr-server-3/logs/catalina.out \
