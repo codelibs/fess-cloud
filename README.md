@@ -3,7 +3,8 @@ FessCloud
 
 ## 概要
 
-SolrCloudをFessで利用するための構築用シェルスクリプトです。
+FessCloudはSolrCloudを用いたFess環境です。
+ここではSolrCloudをFessで利用するための構築用シェルスクリプトを提供します。
 実行すると、ZooKeeper+Solrサーバ、Solrサーバ、Fessサーバのディレクトリが作成できます。
 以下のような構成図になります。
 
@@ -30,5 +31,28 @@ TBD
 ## 構築
 
 TBD
+
+## サンプル
+
+試しに構築・実行するような場合に利用するサンプルスクリプトを用意してあります。
+
+### 構築・実行
+
+sample_startup.shを実行することで、ローカルPC上にconfig.shで指定した環境を作成し、FessCloudを起動することができます。
+
+    $ bash ./sample_startup.sh
+
+様々なログが出ますが、ログ出力が一段落した頃に http://localhost:8180/solr/#/~cloud にアクセスすることでSolrCloudの状態を確認することができます。
+デフォルトではZK+Solrサーバが3インスタンス、Solrサーバが2インスタンス、Fessが1インスタンスを起動します。
+シャード数が5で、1シャード当たり3ノード保持する構成で生成・実行されます。
+ロースペックのPCなどで試す場合は、config.shでSOLR\_SERVER\_NAMESを空にして、NUM\_SHARDSを3、REPLICATION\_FACTORを2などにすると良いと思います。
+
+Solrの管理画面でSolrCloudの状態を確認できたら、http://localhost:8080/fess/ にアクセスして、通常のFessと同様にクロール設定を行い、クロールの実行、検索を試すことができます。
+
+### 停止
+
+    $ bash ./sample_shutdown.sh
+
+上記を実行することでsample_startup.shで実行したすべてのインスタンスを停止することができます。
 
 
