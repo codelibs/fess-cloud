@@ -11,7 +11,7 @@ fi
 
 . $BASE_DIR/config.sh
 
-bash $BASE_DIR/build.sh 
+bash $BASE_DIR/setup_cloud.sh
 
 chmod +x $BUILD_DIR/*/bin/*.sh
 
@@ -34,17 +34,17 @@ for (( I = 0; I < ${#ZK_SOLR_SERVER_NAMES[@]}; ++I )) do
     $BUILD_DIR/$NAME/bin/startup.sh
 done
 
+tail -f $BUILD_DIR/*/logs/catalina.out &
+TAIL_PID=$!
+
+sleep $WAIT_COUNT
+
 # Create Solr Servers
 for (( I = 0; I < ${#SOLR_SERVER_NAMES[@]}; ++I )) do
     NAME=${SOLR_SERVER_NAMES[$I]}
     echo "Starting $NAME ..."
     $BUILD_DIR/$NAME/bin/startup.sh
 done
-
-tail -f $BUILD_DIR/*/logs/catalina.out &
-TAIL_PID=$!
-
-sleep $WAIT_COUNT
 
 echo "Creating SolrCloud collection."
 java -classpath .:$BUILD_DIR/solr-jars/* org.apache.solr.cloud.ZkCLI -zkhost $ZK_HOSTS -cmd upconfig -confname $FESS_CONF -confdir $BUILD_DIR/solr-config
