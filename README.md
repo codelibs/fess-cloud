@@ -60,7 +60,9 @@ config.shに各スクリプトの実行に必要な設定が記述されてい�
 
     # ZooKeeper内で保持するFessのSolr設定名
     FESS_CONF=fessconf
-    # Solrのコレクション名(Fessサーバのsolrlib.diconに記述されます)
+    # Solrのコレクションエイリアス名(Fessサーバのsolrlib.diconに記述されます)
+    FESS_COLLECTION_ALIAS=fess-cloud
+    # Solrのコレクション名
     FESS_COLLECTION=fess-collection
 
     # サンプルスクリプト実行時に利用される項目
@@ -80,6 +82,8 @@ config.shに各スクリプトの実行に必要な設定が記述されてい�
 
 複数のサーバで実行する場合は、targetディレクトリに生成されたものを各サーバで実行してください。
 上記のスクリプトの実行後、各インスタンスを起動し、Fess用のSolr設定をZooKeeperにアップロードして、コレクションにリンクする必要があります。
+コレクションはFessなどの検索アプリケーションからアクセスするインデックスであり、コレクションは複数のシャードから構成されます。
+シャードは複数のSolrのCoreでインデックスを管理して、1つのリーダーのノード(SolrのCore)と複数のレプリカのノード(SolrのCore)で構成されます。
 
 ### Fess用設定の登録
 
@@ -89,6 +93,14 @@ ZooKeeperにFess用のSolr設定(schema.xmlとかsolrconfig.xmlとか)を登録�
     $ java -classpath .:$BUILD_DIR/solr-jars/* org.apache.solr.cloud.ZkCLI -zkhost $ZK_HOSTS -cmd linkconfig -collection $FESS_COLLECTION -confname $FESS_CONF
 
 $〜の環境変数で記載していますが、setup\_cloud.shを実行すると実行完了時に展開された形で出力されるのでその内容を参照してください。
+
+### コレクションのエイリアス作成
+
+Fessから参照するコレクションをエイリアスとしておくことで、Fessの設定を変更することなく、コレクションの差し替えなどが可能になります。
+たとえば、インデックスのリカバリを別なコレクションで実施して、リカバリ完了後にエイリアスを変更することで有効にすることができます。
+SolrCloudがlocalhostの8180で動いていて、コレクション名がfess-collectionをエイリアス名がfess-cloudに設定する場合は以下のように実行します。
+
+    $ curl 'localhost:8180/solr/admin/collections?action==CREATEALIAS&name=fess-cloud&collections=fess-collection'
 
 ### コレクションの作成
 

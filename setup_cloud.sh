@@ -124,7 +124,7 @@ for (( I = 0; I < ${#FESS_SERVER_NAMES[@]}; ++I )) do
         $FESS_SRC_DIR/conf/server.xml \
         > $SERVER_DIR/conf/server.xml
     sed -e "s/__FESS_ZK_HOSTS__/$ZK_HOSTS/g" \
-        -e "s/__FESS_COLLECTION__/$FESS_COLLECTION/g" \
+        -e "s/__FESS_COLLECTION__/$FESS_COLLECTION_ALIAS/g" \
         $FESS_SRC_DIR/webapps/fess/WEB-INF/classes/solrlib.dicon \
         > $SERVER_DIR/webapps/fess/WEB-INF/classes/solrlib.dicon
 done

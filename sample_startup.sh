@@ -50,6 +50,7 @@ echo "Creating SolrCloud collection."
 java -classpath .:$BUILD_DIR/solr-jars/* org.apache.solr.cloud.ZkCLI -zkhost $ZK_HOSTS -cmd upconfig -confname $FESS_CONF -confdir $BUILD_DIR/solr-config
 java -classpath .:$BUILD_DIR/solr-jars/* org.apache.solr.cloud.ZkCLI -zkhost $ZK_HOSTS -cmd linkconfig -collection $FESS_COLLECTION -confname $FESS_CONF
 curl "$SOLR_HOST:$SOLR_PORT/solr/admin/collections?action=CREATE&name=$FESS_COLLECTION&numShards=$NUM_SHARDS&replicationFactor=$REPLICATION_FACTOR&maxShardsPerNode=$MAX_SHARDS_PER_NODE"
+curl "$SOLR_HOST:$SOLR_PORT/solr/admin/collections?action=CREATEALIAS&name=$FESS_COLLECTION_ALIAS&collections=$FESS_COLLECTION"
 
 # Create 1 Fess Server
 for (( I = 0; I < ${#FESS_SERVER_NAMES[@]}; ++I )) do
