@@ -2,8 +2,6 @@
 
 cd `dirname $0`
 BASE_DIR=`pwd`
-BUILD_DIR=$BASE_DIR/target
-
 . $BASE_DIR/config.sh
 
 for (( I = 0; I < ${#FESS_SERVER_NAMES[@]}; ++I )) do

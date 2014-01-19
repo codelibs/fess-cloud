@@ -1,5 +1,30 @@
 #!/bin/bash
 
+cd `dirname $0`
+BASE_DIR=`pwd`
+BUILD_DIR=$BASE_DIR/target
+FESS_SRC_DIR=$BASE_DIR/src/fess
+SOLR_SRC_DIR=$BASE_DIR/src/solr
+
+#FESS_DOWNLOAD_URL="http://sourceforge.jp/frs/redir.php?m=iij&f=%2Ffess%2F59462%2Ffess-server-8.2.0.zip"
+FESS_DOWNLOAD_URL="http://fess.codelibs.org/snapshot/fess-server-9.0.0-SNAPSHOT.zip"
+FESS_NAME=fess-server-9.0.0
+FESS_SERVER_DIR=$BUILD_DIR/$FESS_NAME
+SOLR_NAME=solr-server-4.6.0
+SOLR_SERVER_DIR=$BUILD_DIR/$SOLR_NAME
+CLI_LIB_DIR=$BUILD_DIR/solr-jars
+CONFIG_DIR=$BUILD_DIR/solr-config
+FESS_CONFIG_DIR=$CONFIG_DIR/core
+SUGGEST_CONFIG_DIR=$CONFIG_DIR/suggest
+ZKCLI=org.apache.solr.cloud.ZkCLI
+
+FESS_CONF=fess-conf
+FESS_COLLECTION_ALIAS=fess-cloud
+FESS_COLLECTION=fess-collection
+FESS_SUGGEST_CONF=fess-suggest-conf
+FESS_SUGGEST_COLLECTION_ALIAS=fess-suggest-cloud
+FESS_SUGGEST_COLLECTION=fess-suggest-collection
+
 ZK_SOLR_SERVER_NAMES=("zksolr-server-1" "zksolr-server-2" "zksolr-server-3")
 ZK_SOLR_SERVER_HOSTS=("localhost" "localhost" "localhost")
 ZK_SOLR_SERVER_SOLR_PORTS=(8180 8280 8380)
@@ -14,11 +39,7 @@ FESS_SERVER_NAMES=("fess-server-1")
 FESS_SERVER_PORTS=(8080)
 FESS_SERVER_SHUTDOWN_PORTS=(8081)
 
-FESS_CONF=fessconf
-FESS_COLLECTION_ALIAS=fess-cloud
-FESS_COLLECTION=fess-collection
-
 NUM_SHARDS=5
 REPLICATION_FACTOR=3
-MAX_SHARDS_PER_NODE=3
+MAX_SHARDS_PER_NODE=15
 
